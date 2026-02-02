@@ -28,18 +28,18 @@
                       typing-extensions
                       wheel
                     ]);
-                  patches = [
-                    (prev.replaceVars
-                      (prev.fetchpatch {
-                        url = "https://raw.githubusercontent.com/NixOS/nixpkgs/refs/heads/master/pkgs/development/embedded/platformio/interpreter.patch";
-                        hash = "sha256-qTJCNr95S/DVSLigsFDZyy8/Ch/ziiHjGG0lHjOsRSY=";
-                      })
-                      {
-                        interpreter =
-                          (prev.python3Packages.python.withPackages (_: finalAttrs.propagatedBuildInputs)).interpreter;
-                      }
-                    )
-                  ] ++ (prev.lib.lists.drop 1 prevAttrs.patches);
+                  # patches = [
+                  #   (prev.replaceVars
+                  #     (prev.fetchpatch {
+                  #       url = "https://raw.githubusercontent.com/NixOS/nixpkgs/refs/heads/master/pkgs/development/embedded/platformio/interpreter.patch";
+                  #       hash = "sha256-qTJCNr95S/DVSLigsFDZyy8/Ch/ziiHjGG0lHjOsRSY=";
+                  #     })
+                  #     {
+                  #       interpreter =
+                  #         (prev.python3Packages.python.withPackages (_: finalAttrs.propagatedBuildInputs)).interpreter;
+                  #     }
+                  #   )
+                  # ] ++ (prev.lib.lists.drop 1 prevAttrs.patches);
                 }
               );
               platformio = prev.platformio.override { platformio-core = final.platformio-core; };
@@ -53,8 +53,13 @@
 	          platformio
             picocom 
             python314
-            protobuf_31
+            protobuf
           ];
+
+          # shellHook = ''
+          #   export PLATFORMIO_CORE_DIR=$PWD/.pio/platformio
+          #   export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:$LD_LIBRARY_PATH"
+          # '';
         };
       }
     );

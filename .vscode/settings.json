@@ -1,0 +1,8 @@
+{
+  "protobuf.includes": [
+    "${workspaceFolder}/proto"
+  ],
+  // Protoc compilation settings
+  "protobuf.protoc.path": "protoc",
+  "protobuf.protoc.options": ["--plugin=${workspaceFolder}/EmbeddedProto/protoc-gen-eams=protoc-gen-eams", "-I ${workspaceFolder}/proto", "--eams_out=GENERATED/SRC/DIR" ]
+}
