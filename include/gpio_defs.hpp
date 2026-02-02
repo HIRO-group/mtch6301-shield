@@ -1,6 +1,5 @@
 #pragma once
 
-// I2c
 #define SDA_PIN 6
 #define SCL_PIN 7
 
