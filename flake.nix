@@ -52,6 +52,8 @@
           buildInputs = with pkgs; [ 
 	          platformio
             picocom 
+            python314
+            protobuf_31
           ];
         };
       }
