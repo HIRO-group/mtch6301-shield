@@ -1,35 +1,51 @@
 import serial
 import time
-# Import from the subdirectory
-from generated.data_pb2 import InfoMessagePacket
+import os
+import sys
 
-# --- Configuration ---
-SERIAL_PORT = '/dev/ttyACM0' # Change to COMx on Windows
+generated_path = os.path.join(os.path.dirname(__file__), 'generated')
+sys.path.append(generated_path)
+
+from generated.common_pb2 import Envelope
+
+SERIAL_PORT = '/dev/ttyACM0' 
 BAUD_RATE = 115200
 
 def run_listener():
     try:
         ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0.1)
-        print(f"Listening on {SERIAL_PORT} at {BAUD_RATE}...")
+        print(f"Listening on {SERIAL_PORT}...")
 
         while True:
             if ser.in_waiting > 0:
                 raw_payload = ser.read(ser.in_waiting)
 
                 try:
-                    msg = InfoMessagePacket()
-                    msg.ParseFromString(raw_payload)
-                    print(f"[{time.strftime('%H:%M:%S')}] Received Name: {msg.name}")
+                    env = Envelope()
+                    env.ParseFromString(raw_payload)
+
+                  
+                    active_field = env.WhichOneof("payload")
+
+                    if active_field == "info_packet":
+                        print(f"[{time.strftime('%H:%M:%S')}] INFO: {env.info_packet.name}")
+                    
+                    elif active_field == "sensor_packet": # Assuming you add this later
+                        print(f"[{time.strftime('%H:%M:%S')}] SENSOR: {env.sensor_packet.value}")
+                    
+                    elif active_field is None:
+                        print("Received an empty envelope.")
 
                 except Exception as e:
-                    pass # Probaby from compiling
+                    # print(f"Decode error: {e}")
+                    pass
 
             time.sleep(0.01)
 
     except serial.SerialException as e:
         print(f"Serial Error: {e}")
     except KeyboardInterrupt:
-        print("\nStopping listener...")
+        print("\nStopping...")
     finally:
         if 'ser' in locals() and ser.is_open:
             ser.close()

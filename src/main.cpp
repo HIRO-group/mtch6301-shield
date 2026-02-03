@@ -1,7 +1,7 @@
 #include <gpio_defs.hpp>
 #include <mtch.hpp>
 #include <communication/serial.hpp>
-#include <generated/data.h>
+#include <generated/common.h>
 
 #include <Arduino.h>
 
@@ -11,12 +11,12 @@ void setup() {
   pinMode(STATUS_LED, OUTPUT);
   attachInterrupt(MTCH_INT, i2c_master_isr, RISING);
   SerialCommunication::init();
-
-  delay(2000);
-  proto::InfoMessagePacket<32> packet;
-  packet.mutable_name().set("Hello World");
   delay(1000);
-  SerialCommunication::send(packet);
+
+  proto::Envelope<32> env;
+  auto &info = env.mutable_info_packet();
+  info.mutable_name().set("Hello, World!");
+  SerialCommunication::send(env);
 
   esp_err_t res = i2c_master_init();
   MtchCommands::mtch_init();

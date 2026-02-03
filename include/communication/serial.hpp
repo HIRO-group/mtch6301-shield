@@ -4,6 +4,7 @@
 #include <cstring>
 #include <WriteBufferFixedSize.h>
 #include <MessageInterface.h>
+#include <generated/common.h>
 
 class SerialCommunication {
   private:
@@ -11,11 +12,11 @@ class SerialCommunication {
   public:
     static void init();
 
-    template<typename T>
-    static void send(const T& message) {
+    template<uint32_t N>
+    static void send(const proto::Envelope<N>& envelope) {
         ::EmbeddedProto::WriteBufferFixedSize<512> buffer;
 
-        if (message.serialize(buffer) == ::EmbeddedProto::Error::NO_ERRORS) {
+        if (envelope.serialize(buffer) == ::EmbeddedProto::Error::NO_ERRORS) {
             send_raw(buffer.get_data(), buffer.get_size());
         }
     }

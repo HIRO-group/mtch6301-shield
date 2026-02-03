@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+import "commands.proto";
+import "data.proto";
+
+package proto;
+
+message Envelope {
+  oneof payload {
+    InfoMessagePacket info_packet = 1;
+  }
+}
