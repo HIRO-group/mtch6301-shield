@@ -10,7 +10,7 @@
             "includePath": [
                 "/home/totaltaxamount/Dev/robo-skin/esp32-shield-firmware/include",
                 "/home/totaltaxamount/Dev/robo-skin/esp32-shield-firmware/src",
-                "/home/totaltaxamount/Dev/robo-skin/esp32-shield-firmware/EmbeddedProto/src",
+                "/home/totaltaxamount/Dev/robo-skin/esp32-shield-firmware/lib/EmbeddedProto/src",
                 "/home/totaltaxamount/.platformio/packages/framework-arduinoespressif32-libs/esp32c6/include/newlib/platform_include",
                 "/home/totaltaxamount/.platformio/packages/framework-arduinoespressif32-libs/esp32c6/include/freertos/config/include",
                 "/home/totaltaxamount/.platformio/packages/framework-arduinoespressif32-libs/esp32c6/include/freertos/config/include/freertos",
@@ -373,7 +373,7 @@
                 "path": [
                     "/home/totaltaxamount/Dev/robo-skin/esp32-shield-firmware/include",
                     "/home/totaltaxamount/Dev/robo-skin/esp32-shield-firmware/src",
-                    "/home/totaltaxamount/Dev/robo-skin/esp32-shield-firmware/EmbeddedProto/src",
+                    "/home/totaltaxamount/Dev/robo-skin/esp32-shield-firmware/lib/EmbeddedProto/src",
                     "/home/totaltaxamount/.platformio/packages/framework-arduinoespressif32-libs/esp32c6/include/newlib/platform_include",
                     "/home/totaltaxamount/.platformio/packages/framework-arduinoespressif32-libs/esp32c6/include/freertos/config/include",
                     "/home/totaltaxamount/.platformio/packages/framework-arduinoespressif32-libs/esp32c6/include/freertos/config/include/freertos",

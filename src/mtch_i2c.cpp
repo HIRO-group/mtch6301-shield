@@ -212,20 +212,20 @@ bool MtchCommands::mtch_ping() {
 MtchResCode MtchCommands::mtch_init() {
   MtchCommands::mtch_reset();
   delay(100);
-  Serial.println(MtchCommands::mtch_ping());
+  // // Serial.println(MtchCommands::mtch_ping());
   MtchCommands::mtch_enable_touch(false);
 
   uint8_t current_tx_pin_map[18];
   uint8_t current_rx_pin_map[13];
   MtchResCode ret = MtchCommands::mtch_read_register(0x02, 0x00, current_tx_pin_map, sizeof(current_tx_pin_map));
   if (ret != MtchResCode::SUCCESS) {
-    Serial.println(mtch_res_to_string(ret));
+    // Serial.println(mtch_res_to_string(ret));
     return ret;
   }
 
   ret = MtchCommands::mtch_read_register(0x01, 0x00, current_rx_pin_map, sizeof(current_rx_pin_map));
   if (ret != MtchResCode::SUCCESS) {
-    Serial.println(mtch_res_to_string(ret));
+    // Serial.println(mtch_res_to_string(ret));
     return ret;
   }
 
@@ -246,12 +246,12 @@ MtchResCode MtchCommands::mtch_init() {
     }
   }
 
-  Serial.println(should_write);
+  // Serial.println(should_write);
 
   if (should_write) {
-    Serial.println(mtch_res_to_string(MtchCommands::mtch_write_register(0x02, 0x00, MTCH_TX_MAP.data(), 18)));
-    Serial.println(mtch_res_to_string(MtchCommands::mtch_write_register(0x01, 0x00, MTCH_RX_MAP.data(), 13)));
-    Serial.println(mtch_res_to_string(MtchCommands::mtch_write_nvram()));
+    MtchCommands::mtch_write_register(0x02, 0x00, MTCH_TX_MAP.data(), 18);
+    MtchCommands::mtch_write_register(0x01, 0x00, MTCH_RX_MAP.data(), 13);
+    MtchCommands::mtch_write_nvram();
   }
 
   MtchCommands::mtch_enable_touch(true);

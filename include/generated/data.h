@@ -1,11 +1,11 @@
 /*
  *  This file is generated with Embedded Proto, PLEASE DO NOT EDIT!
- *  source: packets.proto
+ *  source: data.proto
  */
 
 // This file is generated. Please do not edit!
-#ifndef PACKETS_H
-#define PACKETS_H
+#ifndef DATA_H
+#define DATA_H
 
 #include <cstdint>
 #include <MessageInterface.h>
@@ -232,4 +232,4 @@ class InfoMessagePacket final: public ::EmbeddedProto::MessageInterface
 };
 
 } // End of namespace proto
-#endif // PACKETS_H
+#endif // DATA_H
