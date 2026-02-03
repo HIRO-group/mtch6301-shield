@@ -54,6 +54,8 @@
             picocom 
             python314
             protobuf
+            python314Packages.pyserial
+            python314Packages.protobuf
           ];
 
           # shellHook = ''
