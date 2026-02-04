@@ -5,8 +5,14 @@ import "data.proto";
 
 package proto;
 
-message Envelope {
+message Data {
   oneof payload {
     InfoMessagePacket info_packet = 1;
+  }
+}
+
+message Command {
+  oneof payload {
+    TestCommand test_command = 1;
   }
 }

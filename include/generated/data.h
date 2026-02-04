@@ -24,7 +24,7 @@
 namespace proto {
 
 template<
-    uint32_t InfoMessagePacket_name_LENGTH
+    uint32_t InfoMessagePacket_message_LENGTH
 >
 class InfoMessagePacket final: public ::EmbeddedProto::MessageInterface
 {
@@ -32,12 +32,12 @@ class InfoMessagePacket final: public ::EmbeddedProto::MessageInterface
     InfoMessagePacket() = default;
     InfoMessagePacket(const InfoMessagePacket& rhs )
     {
-      set_name(rhs.get_name());
+      set_message(rhs.get_message());
     }
 
     InfoMessagePacket(const InfoMessagePacket&& rhs ) noexcept
     {
-      set_name(rhs.get_name());
+      set_message(rhs.get_message());
     }
 
     ~InfoMessagePacket() override = default;
@@ -45,27 +45,27 @@ class InfoMessagePacket final: public ::EmbeddedProto::MessageInterface
     enum class FieldNumber : uint32_t
     {
       NOT_SET = 0,
-      NAME = 1
+      MESSAGE = 1
     };
 
     InfoMessagePacket& operator=(const InfoMessagePacket& rhs)
     {
-      set_name(rhs.get_name());
+      set_message(rhs.get_message());
       return *this;
     }
 
     InfoMessagePacket& operator=(const InfoMessagePacket&& rhs) noexcept
     {
-      set_name(rhs.get_name());
+      set_message(rhs.get_message());
       return *this;
     }
 
-    static constexpr char const* NAME_NAME = "name";
-    inline void clear_name() { name_.clear(); }
-    inline ::EmbeddedProto::FieldString<InfoMessagePacket_name_LENGTH>& mutable_name() { return name_; }
-    inline void set_name(const ::EmbeddedProto::FieldString<InfoMessagePacket_name_LENGTH>& rhs) { name_.set(rhs); }
-    inline const ::EmbeddedProto::FieldString<InfoMessagePacket_name_LENGTH>& get_name() const { return name_; }
-    inline const char* name() const { return name_.get_const(); }
+    static constexpr char const* MESSAGE_NAME = "message";
+    inline void clear_message() { message_.clear(); }
+    inline ::EmbeddedProto::FieldString<InfoMessagePacket_message_LENGTH>& mutable_message() { return message_; }
+    inline void set_message(const ::EmbeddedProto::FieldString<InfoMessagePacket_message_LENGTH>& rhs) { message_.set(rhs); }
+    inline const ::EmbeddedProto::FieldString<InfoMessagePacket_message_LENGTH>& get_message() const { return message_; }
+    inline const char* message() const { return message_.get_const(); }
 
 
     ::EmbeddedProto::Error serialize(::EmbeddedProto::WriteBufferInterface& buffer) const override
@@ -74,7 +74,7 @@ class InfoMessagePacket final: public ::EmbeddedProto::MessageInterface
 
       if(::EmbeddedProto::Error::NO_ERRORS == return_value)
       {
-        return_value = name_.serialize_with_id(static_cast<uint32_t>(FieldNumber::NAME), buffer, false);
+        return_value = message_.serialize_with_id(static_cast<uint32_t>(FieldNumber::MESSAGE), buffer, false);
       }
 
       return return_value;
@@ -93,8 +93,8 @@ class InfoMessagePacket final: public ::EmbeddedProto::MessageInterface
         id_tag = static_cast<FieldNumber>(id_number);
         switch(id_tag)
         {
-          case FieldNumber::NAME:
-            return_value = name_.deserialize_check_type(buffer, wire_type);
+          case FieldNumber::MESSAGE:
+            return_value = message_.deserialize_check_type(buffer, wire_type);
             break;
 
           case FieldNumber::NOT_SET:
@@ -126,7 +126,7 @@ class InfoMessagePacket final: public ::EmbeddedProto::MessageInterface
 
     void clear() override
     {
-      clear_name();
+      clear_message();
 
     }
 
@@ -137,8 +137,8 @@ class InfoMessagePacket final: public ::EmbeddedProto::MessageInterface
       char const* name = nullptr;
       switch(fieldNumber)
       {
-        case FieldNumber::NAME:
-          name = NAME_NAME;
+        case FieldNumber::MESSAGE:
+          name = MESSAGE_NAME;
           break;
         default:
           name = "Invalid FieldNumber";
@@ -202,7 +202,7 @@ class InfoMessagePacket final: public ::EmbeddedProto::MessageInterface
         left_chars.size -= n_chars_used;
       }
 
-      left_chars = name_.to_string(left_chars, indent_level + 2, NAME_NAME, true);
+      left_chars = message_.to_string(left_chars, indent_level + 2, MESSAGE_NAME, true);
   
       if( 0 == indent_level) 
       {
@@ -227,7 +227,7 @@ class InfoMessagePacket final: public ::EmbeddedProto::MessageInterface
   private:
 
 
-      ::EmbeddedProto::FieldString<InfoMessagePacket_name_LENGTH> name_;
+      ::EmbeddedProto::FieldString<InfoMessagePacket_message_LENGTH> message_;
 
 };
 

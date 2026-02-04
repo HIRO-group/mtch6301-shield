@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ndata.proto\x12\x05proto\"!\n\x11InfoMessagePacket\x12\x0c\n\x04name\x18\x01 \x02(\t')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ndata.proto\x12\x05proto\"$\n\x11InfoMessagePacket\x12\x0f\n\x07message\x18\x01 \x02(\t')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,5 +32,5 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'data_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_INFOMESSAGEPACKET']._serialized_start=21
-  _globals['_INFOMESSAGEPACKET']._serialized_end=54
+  _globals['_INFOMESSAGEPACKET']._serialized_end=57
 # @@protoc_insertion_point(module_scope)

@@ -26,13 +26,15 @@ import commands_pb2 as commands__pb2
 import data_pb2 as data__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0c\x63ommon.proto\x12\x05proto\x1a\x0e\x63ommands.proto\x1a\ndata.proto\"F\n\x08\x45nvelope\x12/\n\x0binfo_packet\x18\x01 \x01(\x0b\x32\x18.proto.InfoMessagePacketH\x00\x42\t\n\x07payload')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0c\x63ommon.proto\x12\x05proto\x1a\x0e\x63ommands.proto\x1a\ndata.proto\"B\n\x04\x44\x61ta\x12/\n\x0binfo_packet\x18\x01 \x01(\x0b\x32\x18.proto.InfoMessagePacketH\x00\x42\t\n\x07payload\"@\n\x07\x43ommand\x12*\n\x0ctest_command\x18\x01 \x01(\x0b\x32\x12.proto.TestCommandH\x00\x42\t\n\x07payload')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'common_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_ENVELOPE']._serialized_start=51
-  _globals['_ENVELOPE']._serialized_end=121
+  _globals['_DATA']._serialized_start=51
+  _globals['_DATA']._serialized_end=117
+  _globals['_COMMAND']._serialized_start=119
+  _globals['_COMMAND']._serialized_end=183
 # @@protoc_insertion_point(module_scope)

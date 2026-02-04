@@ -1,8 +1,9 @@
-#include <mtch.hpp>
-#include <gpio_defs.hpp>
-
 #include <driver/i2c.h>
 #include <Arduino.h>
+
+#include <mtch.hpp>
+#include <gpio_defs.hpp>
+#include <communication/serial.hpp>
 
 esp_err_t i2c_master_init(void) {
   i2c_config_t conf = {};
@@ -32,6 +33,12 @@ void wait_for_mtch_ready() {
     vTaskDelay(pdMS_TO_TICKS(1));
   }
   mtch_ready = false;
+}
+
+void handle_error(MtchResCode error) {
+  char buf[32];
+  snprintf(buf, sizeof(buf), "Chip Error: %s", mtch_res_to_string(error));
+  SerialCommunication::send_info<32>(buf);
 }
 
 MtchResCode mtch_read_single_register(uint8_t index, uint8_t offset, uint8_t* res) {
@@ -202,7 +209,6 @@ bool MtchCommands::mtch_ping() {
   uint8_t test;
   esp_err_t res = i2c_master_read_from_device(I2C_PORT, MTCH_I2C_ADDR, &test, 1, pdMS_TO_TICKS(100));
   if (res != ESP_OK) {
-    Serial.printf("ESP ERROR: %s\n", esp_err_to_name(res));
     return false;
   }
   return true;
@@ -212,20 +218,19 @@ bool MtchCommands::mtch_ping() {
 MtchResCode MtchCommands::mtch_init() {
   MtchCommands::mtch_reset();
   delay(100);
-  // // Serial.println(MtchCommands::mtch_ping());
   MtchCommands::mtch_enable_touch(false);
 
   uint8_t current_tx_pin_map[18];
   uint8_t current_rx_pin_map[13];
   MtchResCode ret = MtchCommands::mtch_read_register(0x02, 0x00, current_tx_pin_map, sizeof(current_tx_pin_map));
   if (ret != MtchResCode::SUCCESS) {
-    // Serial.println(mtch_res_to_string(ret));
+    handle_error(ret);
     return ret;
   }
 
   ret = MtchCommands::mtch_read_register(0x01, 0x00, current_rx_pin_map, sizeof(current_rx_pin_map));
   if (ret != MtchResCode::SUCCESS) {
-    // Serial.println(mtch_res_to_string(ret));
+    handle_error(ret);
     return ret;
   }
 
@@ -233,7 +238,9 @@ MtchResCode MtchCommands::mtch_init() {
   for (int i = 0; i < sizeof(current_tx_pin_map); i++) {
     if (current_tx_pin_map[i] != MTCH_TX_MAP[i]) {
       should_write = true;
-      Serial.printf("TX PIN MAP MISMATCH: %d != %d\n", current_tx_pin_map[i], MTCH_TX_MAP[i]);
+      char buf[64];
+      snprintf(buf, sizeof(buf), "TX PIN MAP MISMATCH: %d != %d", current_tx_pin_map[i], MTCH_TX_MAP[i]);
+      SerialCommunication::send_info<64>(buf);
       break;
     }
   }
@@ -241,14 +248,16 @@ MtchResCode MtchCommands::mtch_init() {
   for (int i = 0; i < sizeof(current_rx_pin_map); i++) {
     if (current_rx_pin_map[i] != MTCH_RX_MAP[i]) {
       should_write = true;
-      Serial.printf("RX PIN MAP MISMATCH: %d != %d\n", current_rx_pin_map[i], MTCH_RX_MAP[i]);
+      char buf[64];
+      snprintf(buf, sizeof(buf), "RX PIN MAP MISMATCH: %d != %d", current_rx_pin_map[i], MTCH_RX_MAP[i]);
+      SerialCommunication::send_info<64>(buf);
       break;
     }
   }
 
-  // Serial.println(should_write);
 
   if (should_write) {
+    SerialCommunication::send_info<32>("Updating MTCH NVRM pinmap");
     MtchCommands::mtch_write_register(0x02, 0x00, MTCH_TX_MAP.data(), 18);
     MtchCommands::mtch_write_register(0x01, 0x00, MTCH_RX_MAP.data(), 13);
     MtchCommands::mtch_write_nvram();
