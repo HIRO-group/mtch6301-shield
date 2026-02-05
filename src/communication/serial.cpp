@@ -4,6 +4,8 @@
 #include <WriteBufferFixedSize.h>
 #include <ReadBufferFixedSize.h>
 
+
+
 void SerialCommunication::init() {
   Serial.begin(115200);
 }
@@ -43,12 +45,13 @@ void SerialCommunication::poll_recv() {
             Serial.readBytes(readBuffer.get_data(), packet_len);
             readBuffer.set_bytes_written(packet_len);
 
-            proto::Command msg;
+            proto::Command cmd;
 
-            if (msg.deserialize(readBuffer) == ::EmbeddedProto::Error::NO_ERRORS) {
-                SerialCommunication::send_info<11>("Command received");
+            if (cmd.deserialize(readBuffer) == ::EmbeddedProto::Error::NO_ERRORS) {
+                command_manager.process_command(cmd);
             }
         }
     }
 }
+
 

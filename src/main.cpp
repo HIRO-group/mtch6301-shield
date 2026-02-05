@@ -2,27 +2,34 @@
 #include <mtch.hpp>
 #include <communication/serial.hpp>
 #include <generated/common.h>
+#include <command_manager.hpp>
 
 #include <Arduino.h>
 
 int count = 0;
 
+CommandManager command_manager;
+SerialCommunication comm(Serial, command_manager);
+
+
 void setup() {
   pinMode(MTCH_RESET, OUTPUT);
   pinMode(MTCH_INT, INPUT);
   pinMode(STATUS_LED, OUTPUT);
-  attachInterrupt(MTCH_INT, i2c_master_isr, RISING);
   digitalWrite(STATUS_LED, LOW);
 
-  SerialCommunication::init();
+  comm.init();
   delay(5000);
 
-  SerialCommunication::send_info<11>("Starting...\n");
+  comm.send_info<11>("Starting...\n");
 
   esp_err_t res = i2c_master_init();
-  MtchCommands::mtch_init();
+  // Mtch::init();
+  Mtch mtch(comm);
+  mtch.init();
 
-  SerialCommunication::send_info<4>("Done\n");
+
+  comm.send_info<4>("Done\n");
 
   // // Serial.println(mtch_res_to_string(MtchCommands::mtch_enable_touch(false)));
   // delay(500);
@@ -31,5 +38,5 @@ void setup() {
 }
 
 void loop() {
-  SerialCommunication::poll_recv();
+  comm.poll_recv();
 }

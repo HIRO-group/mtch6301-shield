@@ -22,26 +22,28 @@ esp_err_t i2c_master_init(void) {
   return i2c_driver_install(I2C_PORT, conf.mode, 0, 0, 0);
 }
 
-volatile bool mtch_ready = false;
+Mtch* Mtch::instance = nullptr;
 
-void IRAM_ATTR i2c_master_isr() {
-  mtch_ready = true;
+void IRAM_ATTR Mtch::int_isr() {
+  if (instance != nullptr) {
+    instance->mtch_ready = true;
+  }
 }
 
-void wait_for_mtch_ready() {
-  while (!mtch_ready) {
+void Mtch::wait_for_ready() {
+  while (!this->mtch_ready) {
     vTaskDelay(pdMS_TO_TICKS(1));
   }
-  mtch_ready = false;
+  this->mtch_ready = false;
 }
 
-void handle_error(MtchResCode error) {
+void Mtch::handle_error(MtchResCode error) {
   char buf[32];
   snprintf(buf, sizeof(buf), "Chip Error: %s", mtch_res_to_string(error));
-  SerialCommunication::send_info<32>(buf);
+  this->comm.send_info<32>(buf);
 }
 
-MtchResCode mtch_read_single_register(uint8_t index, uint8_t offset, uint8_t* res) {
+MtchResCode Mtch::read_single_register(uint8_t index, uint8_t offset, uint8_t* res) {
   uint8_t payload[5] = {0x55, 0x03, 0x16, index, offset};
   uint8_t resp[6];
 
@@ -54,11 +56,13 @@ MtchResCode mtch_read_single_register(uint8_t index, uint8_t offset, uint8_t* re
   );
 
   if (ret != ESP_OK) {
-    Serial.printf("I2C ERROR: %s\n", esp_err_to_name(ret));
+    char buf[32];
+    snprintf(buf, sizeof(buf), "I2C ERROR: %s", esp_err_to_name(ret));
+    this->comm.send_info<32>(buf);
     return MtchResCode::I2C_ERROR;
   }
 
-  wait_for_mtch_ready();
+  this->wait_for_ready();
   ret = i2c_master_read_from_device(
     I2C_PORT,
     MTCH_I2C_ADDR,
@@ -67,7 +71,9 @@ MtchResCode mtch_read_single_register(uint8_t index, uint8_t offset, uint8_t* re
     I2C_TIMEOUT_TICKS
   );
   if (ret != ESP_OK) {
-    Serial.printf("I2C ERROR: %s\n", esp_err_to_name(ret));
+    char buf[32];
+    snprintf(buf, sizeof(buf), "I2C ERROR: %s", esp_err_to_name(ret));
+    this->comm.send_info<32>(buf);
     return MtchResCode::I2C_ERROR;
   }
 
@@ -76,9 +82,9 @@ MtchResCode mtch_read_single_register(uint8_t index, uint8_t offset, uint8_t* re
   return static_cast<MtchResCode>(resp[3]);
 }
 
-MtchResCode MtchCommands::mtch_read_register(uint8_t reg_index, uint8_t offset_start, uint8_t* res, size_t len) {
+MtchResCode Mtch::read_register(uint8_t reg_index, uint8_t offset_start, uint8_t* res, size_t len) {
   for (int i = 0; i < len; i++) {
-    MtchResCode ret = mtch_read_single_register(reg_index, offset_start + i, &res[i]);
+    MtchResCode ret = this->read_single_register(reg_index, offset_start + i, &res[i]);
     if (ret != MtchResCode::SUCCESS) {
       return ret;
     }
@@ -87,29 +93,34 @@ MtchResCode MtchCommands::mtch_read_register(uint8_t reg_index, uint8_t offset_s
   return MtchResCode::SUCCESS;
 }
 
-MtchResCode mtch_write_single_register(uint8_t index, uint8_t offset, const uint8_t* value) {
+MtchResCode Mtch::write_single_register(uint8_t index, uint8_t offset, const uint8_t* value) {
   uint8_t payload[6] = {0x55, 0x04, 0x15, index, offset, *value};
   uint8_t resp[5];
 
   esp_err_t ret = i2c_master_write_to_device(I2C_PORT, MTCH_I2C_ADDR, payload, sizeof(payload), I2C_TIMEOUT_TICKS);
   if (ret != ESP_OK) {
-    Serial.printf("I2C ERROR: %s\n", esp_err_to_name(ret));
+    char buf[32];
+    snprintf(buf, sizeof(buf), "I2C ERROR: %s", esp_err_to_name(ret));
+    this->comm.send_info<32>(buf);
     return MtchResCode::I2C_ERROR;
   }
 
-  wait_for_mtch_ready();
+  this->wait_for_ready();
   ret = i2c_master_read_from_device(I2C_PORT, MTCH_I2C_ADDR, resp, sizeof(resp), I2C_TIMEOUT_TICKS);
   if (ret != ESP_OK) {
-    Serial.printf("I2C ERROR: %s\n", esp_err_to_name(ret));
+    char buf[32];
+    snprintf(buf, sizeof(buf), "I2C ERROR: %s", esp_err_to_name(ret));
+    this->comm.send_info<32>(buf);
+
     return MtchResCode::I2C_ERROR;
   }
 
   return static_cast<MtchResCode>(resp[3]);
 }
 
-MtchResCode MtchCommands::mtch_write_register(uint8_t reg_index, uint8_t offset_start, const uint8_t* value, size_t len) {
+MtchResCode Mtch::write_register(uint8_t reg_index, uint8_t offset_start, const uint8_t* value, size_t len) {
   for (int i = 0; i < len; i++) {
-    MtchResCode ret = mtch_write_single_register(reg_index, offset_start + i, &value[i]);
+    MtchResCode ret = this->write_single_register(reg_index, offset_start + i, &value[i]);
     if (ret != MtchResCode::SUCCESS) {
       return ret;
     }
@@ -118,14 +129,14 @@ MtchResCode MtchCommands::mtch_write_register(uint8_t reg_index, uint8_t offset_
   return MtchResCode::SUCCESS;
 }
 
-MtchResCode MtchCommands::mtch_device_id(uint8_t* device_id) {
+MtchResCode Mtch::device_id(uint8_t* device_id) {
   uint8_t payload[3] = {0x55, 0x01, 0x83};
   uint8_t resp[9];
   if (i2c_master_write_to_device(I2C_PORT, MTCH_I2C_ADDR, payload, sizeof(payload), I2C_TIMEOUT_TICKS) != ESP_OK) {
     return MtchResCode::I2C_ERROR;
   }
 
-  wait_for_mtch_ready();
+  this->wait_for_ready();
   if (i2c_master_read_from_device(I2C_PORT, MTCH_I2C_ADDR, resp, sizeof(resp), I2C_TIMEOUT_TICKS) != ESP_OK) {
     return MtchResCode::I2C_ERROR;
   } 
@@ -136,8 +147,7 @@ MtchResCode MtchCommands::mtch_device_id(uint8_t* device_id) {
   return static_cast<MtchResCode>(resp[3]);
 }
 
-MtchResCode MtchCommands::mtch_enable_touch(bool enable) {
-
+MtchResCode Mtch::enable_touch(bool enable) {
   uint8_t payload[3] = {0x55, 0x01, static_cast<uint8_t>(enable ? 0x01 : 0x00)};
   uint8_t resp[5];
 
@@ -145,7 +155,7 @@ MtchResCode MtchCommands::mtch_enable_touch(bool enable) {
     return MtchResCode::I2C_ERROR;
   }
 
-  wait_for_mtch_ready();
+  this->wait_for_ready();
   if (i2c_master_read_from_device(I2C_PORT, MTCH_I2C_ADDR, resp, sizeof(resp), I2C_TIMEOUT_TICKS) != ESP_OK) {
     return MtchResCode::I2C_ERROR;
   }
@@ -153,14 +163,14 @@ MtchResCode MtchCommands::mtch_enable_touch(bool enable) {
   return static_cast<MtchResCode>(resp[3]);
 }
 
-MtchResCode MtchCommands::mtch_scan_baseline() {
+MtchResCode Mtch::scan_baseline() {
   uint8_t payload[3] = {0x55, 0x01, 0x14};
   uint8_t resp[5];
   if (i2c_master_write_to_device(I2C_PORT, MTCH_I2C_ADDR, payload, sizeof(payload), I2C_TIMEOUT_TICKS) != ESP_OK) {
     return MtchResCode::I2C_ERROR;
   }
 
-  wait_for_mtch_ready();
+  this->wait_for_ready();
   if (i2c_master_read_from_device(I2C_PORT, MTCH_I2C_ADDR, resp, sizeof(resp), I2C_TIMEOUT_TICKS) != ESP_OK) {
     return MtchResCode::I2C_ERROR;
   }
@@ -168,7 +178,7 @@ MtchResCode MtchCommands::mtch_scan_baseline() {
   return static_cast<MtchResCode>(resp[3]);
 }
 
-MtchResCode MtchCommands::mtch_sleep() {
+MtchResCode Mtch::sleep() {
   uint8_t payload[3] = {0x55, 0x01, 0x18};
   uint8_t resp[5];
 
@@ -176,7 +186,7 @@ MtchResCode MtchCommands::mtch_sleep() {
     return MtchResCode::I2C_ERROR;
   }
 
-  wait_for_mtch_ready();
+  this->wait_for_ready();
   if (i2c_master_read_from_device(I2C_PORT, MTCH_I2C_ADDR, resp, sizeof(resp), I2C_TIMEOUT_TICKS) != ESP_OK) {
     return MtchResCode::I2C_ERROR;
   }
@@ -184,14 +194,14 @@ MtchResCode MtchCommands::mtch_sleep() {
   return static_cast<MtchResCode>(resp[3]);
 }
 
-MtchResCode MtchCommands::mtch_write_nvram() {
+MtchResCode Mtch::write_nvram() {
   uint8_t payload[3] = {0x55, 0x01, 0x17};
   uint8_t resp[5];
   if (i2c_master_write_to_device(I2C_PORT, MTCH_I2C_ADDR, payload, sizeof(payload), I2C_TIMEOUT_TICKS) != ESP_OK) {
     return MtchResCode::I2C_ERROR;
   }
 
-  wait_for_mtch_ready();
+  this->wait_for_ready();
   if (i2c_master_read_from_device(I2C_PORT, MTCH_I2C_ADDR, resp, sizeof(resp), I2C_TIMEOUT_TICKS) != ESP_OK) {
     return MtchResCode::I2C_ERROR;
   }
@@ -199,13 +209,13 @@ MtchResCode MtchCommands::mtch_write_nvram() {
   return static_cast<MtchResCode>(resp[3]);
 }
 
-void MtchCommands::mtch_reset() {
+void Mtch::reset() {
   digitalWrite(MTCH_RESET, LOW);
   delayMicroseconds(10);
   digitalWrite(MTCH_RESET, HIGH);
 }
 
-bool MtchCommands::mtch_ping() { 
+bool Mtch::ping() { 
   uint8_t test;
   esp_err_t res = i2c_master_read_from_device(I2C_PORT, MTCH_I2C_ADDR, &test, 1, pdMS_TO_TICKS(100));
   if (res != ESP_OK) {
@@ -215,20 +225,20 @@ bool MtchCommands::mtch_ping() {
 
 }
 
-MtchResCode MtchCommands::mtch_init() {
-  MtchCommands::mtch_reset();
+MtchResCode Mtch::init() {
+  Mtch::reset();
   delay(100);
-  MtchCommands::mtch_enable_touch(false);
+  Mtch::enable_touch(false);
 
   uint8_t current_tx_pin_map[18];
   uint8_t current_rx_pin_map[13];
-  MtchResCode ret = MtchCommands::mtch_read_register(0x02, 0x00, current_tx_pin_map, sizeof(current_tx_pin_map));
+  MtchResCode ret = Mtch::read_register(0x02, 0x00, current_tx_pin_map, sizeof(current_tx_pin_map));
   if (ret != MtchResCode::SUCCESS) {
     handle_error(ret);
     return ret;
   }
 
-  ret = MtchCommands::mtch_read_register(0x01, 0x00, current_rx_pin_map, sizeof(current_rx_pin_map));
+  ret = Mtch::read_register(0x01, 0x00, current_rx_pin_map, sizeof(current_rx_pin_map));
   if (ret != MtchResCode::SUCCESS) {
     handle_error(ret);
     return ret;
@@ -240,7 +250,7 @@ MtchResCode MtchCommands::mtch_init() {
       should_write = true;
       char buf[64];
       snprintf(buf, sizeof(buf), "TX PIN MAP MISMATCH: %d != %d", current_tx_pin_map[i], MTCH_TX_MAP[i]);
-      SerialCommunication::send_info<64>(buf);
+      this->comm.send_info<64>(buf);
       break;
     }
   }
@@ -250,19 +260,19 @@ MtchResCode MtchCommands::mtch_init() {
       should_write = true;
       char buf[64];
       snprintf(buf, sizeof(buf), "RX PIN MAP MISMATCH: %d != %d", current_rx_pin_map[i], MTCH_RX_MAP[i]);
-      SerialCommunication::send_info<64>(buf);
+      this->comm.send_info<64>(buf);
       break;
     }
   }
 
 
   if (should_write) {
-    SerialCommunication::send_info<32>("Updating MTCH NVRM pinmap");
-    MtchCommands::mtch_write_register(0x02, 0x00, MTCH_TX_MAP.data(), 18);
-    MtchCommands::mtch_write_register(0x01, 0x00, MTCH_RX_MAP.data(), 13);
-    MtchCommands::mtch_write_nvram();
+    this->comm.send_info<32>("Updating MTCH NVRM pinmap");
+    Mtch::write_register(0x02, 0x00, MTCH_TX_MAP.data(), 18);
+    Mtch::write_register(0x01, 0x00, MTCH_RX_MAP.data(), 13);
+    Mtch::write_nvram();
   }
 
-  MtchCommands::mtch_enable_touch(true);
+  Mtch::enable_touch(true);
   return MtchResCode::SUCCESS;
 }
