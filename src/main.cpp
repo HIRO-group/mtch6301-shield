@@ -25,12 +25,7 @@ void setup() {
   comm.send_info<16>("Initializing...");
   esp_err_t res = i2c_master_init();
   mtch = new Mtch(comm);
-  // mtch.reset();
-  // delay(100);
-  // char buf[32];
-  // snprintf(buf, sizeof(buf), "I2C Init: %s", esp_err_to_name(res));
-  // comm.send_info<32>(buf);
-  // mtch.ping();
+
   mtch->init();
   comm.send_info<5>("Ready");
 }

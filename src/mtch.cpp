@@ -76,6 +76,7 @@ MtchResCode Mtch::read_single_register(uint8_t index, uint8_t offset, uint8_t* r
     sizeof(resp),
     I2C_TIMEOUT_TICKS
   );
+
   if (ret != ESP_OK) {
     char buf[32];
     snprintf(buf, sizeof(buf), "I2C ERROR: %s", esp_err_to_name(ret));
@@ -94,6 +95,8 @@ MtchResCode Mtch::read_register(uint8_t reg_index, uint8_t offset_start, uint8_t
     if (ret != MtchResCode::SUCCESS) {
       return ret;
     }
+
+    ets_delay_us(150);
   }
 
   return MtchResCode::SUCCESS;
@@ -238,7 +241,11 @@ bool Mtch::ping() {
 
 MtchResCode Mtch::init() {
   this->reset();
-  delay(100);
+  while (digitalRead(MTCH_INT) == HIGH)
+  {
+    delay(1);
+  }
+  
   this->enable_touch(false);
 
   uint8_t current_tx_pin_map[18];
