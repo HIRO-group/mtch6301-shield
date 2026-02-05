@@ -10,6 +10,7 @@ int count = 0;
 
 CommandManager command_manager;
 SerialCommunication comm(Serial, command_manager);
+Mtch* mtch;
 
 
 void setup() {
@@ -21,22 +22,20 @@ void setup() {
   comm.init();
   delay(5000);
 
-  comm.send_info<11>("Starting...\n");
-
+  comm.send_info<16>("Initializing...");
   esp_err_t res = i2c_master_init();
-  // Mtch::init();
-  Mtch mtch(comm);
-  mtch.init();
-
-
-  comm.send_info<4>("Done\n");
-
-  // // Serial.println(mtch_res_to_string(MtchCommands::mtch_enable_touch(false)));
-  // delay(500);
-  // // Serial.println(mtch_res_to_string(MtchCommands::mtch_enable_touch(true)));
-
+  mtch = new Mtch(comm);
+  // mtch.reset();
+  // delay(100);
+  // char buf[32];
+  // snprintf(buf, sizeof(buf), "I2C Init: %s", esp_err_to_name(res));
+  // comm.send_info<32>(buf);
+  // mtch.ping();
+  mtch->init();
+  comm.send_info<5>("Ready");
 }
 
 void loop() {
   comm.poll_recv();
+  mtch->poll_sensor();
 }

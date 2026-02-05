@@ -15,10 +15,9 @@
 #define I2C_PORT I2C_NUM_0
 #define I2C_TIMEOUT_TICKS pdMS_TO_TICKS(100)
 
-constexpr std::array<uint8_t, 18> MTCH_TX_MAP = {2, 3, 6, 13, 4, 7, 28, 29, 30, 14, 15, 16, 5, 8, 31, 32, 33, 34};
-constexpr std::array<uint8_t, 13> MTCH_RX_MAP = {8, 7, 6, 5, 4, 3, 2, 1, 0, 9, 10, 11, 12};
+inline const std::array<uint8_t, 18> MTCH_TX_MAP = {2, 3, 6, 13, 4, 7, 28, 29, 30, 14, 15, 16, 5, 8, 31, 32, 33, 34};
+inline const std::array<uint8_t, 13> MTCH_RX_MAP = {8, 7, 6, 5, 4, 3, 2, 1, 0, 9, 10, 11, 12};
 
-void IRAM_ATTR i2c_master_isr();
 
 enum MtchResCode : uint8_t {
   SUCCESS = 0x00,
@@ -51,6 +50,7 @@ class Mtch {
   public:
     Mtch(SerialCommunication& comm) : comm(comm) {
       instance = this;
+      int_isr_lock = xSemaphoreCreateBinary();
       attachInterrupt(MTCH_INT, int_isr, RISING);
     }
     
@@ -63,11 +63,14 @@ class Mtch {
     MtchResCode write_nvram();
     MtchResCode init();
 
+    void poll_sensor();
+
     void reset();
     bool ping();
   private:
     SerialCommunication& comm;
-    volatile bool mtch_ready = false;
+
+    static SemaphoreHandle_t int_isr_lock;
     static Mtch* instance;
     static void IRAM_ATTR int_isr();
     

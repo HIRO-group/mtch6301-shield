@@ -23,18 +23,24 @@ esp_err_t i2c_master_init(void) {
 }
 
 Mtch* Mtch::instance = nullptr;
+SemaphoreHandle_t Mtch::int_isr_lock = nullptr;
 
 void IRAM_ATTR Mtch::int_isr() {
-  if (instance != nullptr) {
-    instance->mtch_ready = true;
+  if (instance != nullptr && int_isr_lock != nullptr) {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    
+    xSemaphoreGiveFromISR(int_isr_lock, &xHigherPriorityTaskWoken);
+    
+    if (xHigherPriorityTaskWoken) {
+        portYIELD_FROM_ISR();
+    }
   }
 }
 
 void Mtch::wait_for_ready() {
-  while (!this->mtch_ready) {
-    vTaskDelay(pdMS_TO_TICKS(1));
+  if (xSemaphoreTake(int_isr_lock, pdMS_TO_TICKS(100)) == pdFALSE) {
+    this->comm.send_info<32>("Wait Ready Timeout");
   }
-  this->mtch_ready = false;
 }
 
 void Mtch::handle_error(MtchResCode error) {
@@ -152,11 +158,13 @@ MtchResCode Mtch::enable_touch(bool enable) {
   uint8_t resp[5];
 
   if (i2c_master_write_to_device(I2C_PORT, MTCH_I2C_ADDR, payload, sizeof(payload), I2C_TIMEOUT_TICKS) != ESP_OK) {
+    this->comm.send_info<32>("I2C ERROR touch");
     return MtchResCode::I2C_ERROR;
   }
 
   this->wait_for_ready();
   if (i2c_master_read_from_device(I2C_PORT, MTCH_I2C_ADDR, resp, sizeof(resp), I2C_TIMEOUT_TICKS) != ESP_OK) {
+    this->comm.send_info<32>("I2C ERROR touch readback");
     return MtchResCode::I2C_ERROR;
   }
 
@@ -219,6 +227,9 @@ bool Mtch::ping() {
   uint8_t test;
   esp_err_t res = i2c_master_read_from_device(I2C_PORT, MTCH_I2C_ADDR, &test, 1, pdMS_TO_TICKS(100));
   if (res != ESP_OK) {
+    char buf[32];
+    snprintf(buf, sizeof(buf), "I2C ERROR: %s", esp_err_to_name(res));
+    this->comm.send_info<32>(buf);
     return false;
   }
   return true;
@@ -226,20 +237,22 @@ bool Mtch::ping() {
 }
 
 MtchResCode Mtch::init() {
-  Mtch::reset();
+  this->reset();
   delay(100);
-  Mtch::enable_touch(false);
+  this->enable_touch(false);
 
   uint8_t current_tx_pin_map[18];
   uint8_t current_rx_pin_map[13];
-  MtchResCode ret = Mtch::read_register(0x02, 0x00, current_tx_pin_map, sizeof(current_tx_pin_map));
+  MtchResCode ret = this->read_register(0x02, 0x00, current_tx_pin_map, sizeof(current_tx_pin_map));
   if (ret != MtchResCode::SUCCESS) {
+    this->comm.send_info<35>("Failed to read MTCH NVRM pinmap tx");
     handle_error(ret);
     return ret;
   }
 
-  ret = Mtch::read_register(0x01, 0x00, current_rx_pin_map, sizeof(current_rx_pin_map));
+  ret = this->read_register(0x01, 0x00, current_rx_pin_map, sizeof(current_rx_pin_map));
   if (ret != MtchResCode::SUCCESS) {
+    this->comm.send_info<35>("Failed to read MTCH NVRM pinmap rx");
     handle_error(ret);
     return ret;
   }
@@ -268,11 +281,17 @@ MtchResCode Mtch::init() {
 
   if (should_write) {
     this->comm.send_info<32>("Updating MTCH NVRM pinmap");
-    Mtch::write_register(0x02, 0x00, MTCH_TX_MAP.data(), 18);
-    Mtch::write_register(0x01, 0x00, MTCH_RX_MAP.data(), 13);
-    Mtch::write_nvram();
+    this->write_register(0x02, 0x00, MTCH_TX_MAP.data(), 18);
+    this->write_register(0x01, 0x00, MTCH_RX_MAP.data(), 13);
+    this->write_nvram();
   }
 
-  Mtch::enable_touch(true);
+  this->enable_touch(true);
+  MtchResCode res = this->scan_baseline();
+  char buf[32];
+  snprintf(buf, sizeof(buf), "Scan Baseline: %s", mtch_res_to_string(res));
+  this->comm.send_info<32>(buf);
   return MtchResCode::SUCCESS;
 }
+
+void Mtch::poll_sensor() {}
