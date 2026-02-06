@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ndata.proto\x12\x05proto\"$\n\x11InfoMessagePacket\x12\x0f\n\x07message\x18\x01 \x02(\t')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ndata.proto\x12\x05proto\"$\n\x11InfoMessagePacket\x12\x0f\n\x07message\x18\x01 \x02(\t\"G\n\x0bTouchPacket\x12\x10\n\x08touch_id\x18\x01 \x02(\x05\x12\x10\n\x08pen_down\x18\x02 \x02(\x08\x12\t\n\x01x\x18\x03 \x02(\x05\x12\t\n\x01y\x18\x04 \x02(\x05')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,4 +33,6 @@ if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_INFOMESSAGEPACKET']._serialized_start=21
   _globals['_INFOMESSAGEPACKET']._serialized_end=57
+  _globals['_TOUCHPACKET']._serialized_start=59
+  _globals['_TOUCHPACKET']._serialized_end=130
 # @@protoc_insertion_point(module_scope)

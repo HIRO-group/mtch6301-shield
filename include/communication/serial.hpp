@@ -4,17 +4,27 @@
 #include <cstring>
 #include <WriteBufferFixedSize.h>
 #include <MessageInterface.h>
+#include <Arduino.h>
 
 #include <generated/common.h>
-#include <command_manager.hpp>
 
+class CommandManager;
 class SerialCommunication {
   public:
-    SerialCommunication(Stream& port, CommandManager& command_manager) : 
-      port(port), command_manager(command_manager) {}
+    SerialCommunication(Stream& port) : 
+      port(port) {}
 
     void init();
-    void poll_recv();
+    void poll_recv(CommandManager& command_manager);
+
+    template<uint32_t N>
+    void send(const proto::Data<N>& data) {
+        ::EmbeddedProto::WriteBufferFixedSize<512> buffer;
+
+        if (data.serialize(buffer) == ::EmbeddedProto::Error::NO_ERRORS) {
+            this->send_raw(buffer.get_data(), buffer.get_size());
+        }
+    }
 
     template<uint32_t N>
     void send_info(const char* message_text) {
@@ -25,16 +35,6 @@ class SerialCommunication {
 
   private:
     Stream& port;
-    CommandManager& command_manager;
 
     void send_raw(const uint8_t* data, size_t len);
-
-    template<uint32_t N>
-    void send(const proto::Data<N>& data) {
-        ::EmbeddedProto::WriteBufferFixedSize<512> buffer;
-
-        if (data.serialize(buffer) == ::EmbeddedProto::Error::NO_ERRORS) {
-            this->send_raw(buffer.get_data(), buffer.get_size());
-        }
-    }
 };

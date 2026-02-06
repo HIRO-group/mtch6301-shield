@@ -293,12 +293,40 @@ MtchResCode Mtch::init() {
     this->write_nvram();
   }
 
-  this->enable_touch(true);
-  MtchResCode res = this->scan_baseline();
-  char buf[32];
-  snprintf(buf, sizeof(buf), "Scan Baseline: %s", mtch_res_to_string(res));
-  this->comm.send_info<32>(buf);
+  // this->scan_baseline();
+  // this->enable_touch(true);
   return MtchResCode::SUCCESS;
 }
 
-void Mtch::poll_sensor() {}
+void Mtch::poll_sensor() {
+  if (xSemaphoreTake(int_isr_lock, 0) == pdFALSE) {
+    return;
+  }
+
+
+  uint8_t buf[6];
+  esp_err_t ret = i2c_master_read_from_device(
+    I2C_PORT, MTCH_I2C_ADDR, buf, sizeof(buf), 
+    I2C_TIMEOUT_TICKS
+  );
+  if (ret != ESP_OK) {
+    char cbuf[32];
+    snprintf(cbuf, sizeof(cbuf), "I2C ERROR: %s", esp_err_to_name(ret));
+    this->comm.send_info<32>(cbuf);
+    return;
+  }
+
+  proto::Data<16> data;
+  data.mutable_touch_packet().set_touch_id((buf[1] >> 3) & 0x0F);
+  data.mutable_touch_packet().set_pen_down(buf[1] & 0x01);
+  
+  uint16_t x_low = buf[2] & 0x7F;
+  uint16_t x_high = buf[3] & 0x1F;
+  data.mutable_touch_packet().set_x(x_low | (x_high << 7));
+
+  uint16_t y_low = buf[4] & 0x7F;
+  uint16_t y_high = buf[5] & 0x1F;
+  data.mutable_touch_packet().set_y(y_low | (y_high << 7));
+
+  this->comm.send<16>(data);  
+}

@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x63ommands.proto\x12\x05proto\"\r\n\x0bTestCommand')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x63ommands.proto\x12\x05proto\"\r\n\x0bTestCommand\"7\n\x15SetNumChannelsCommand\x12\x0e\n\x06num_rx\x18\x01 \x02(\x05\x12\x0e\n\x06num_tx\x18\x02 \x02(\x05')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,4 +33,6 @@ if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_TESTCOMMAND']._serialized_start=25
   _globals['_TESTCOMMAND']._serialized_end=38
+  _globals['_SETNUMCHANNELSCOMMAND']._serialized_start=40
+  _globals['_SETNUMCHANNELSCOMMAND']._serialized_end=95
 # @@protoc_insertion_point(module_scope)

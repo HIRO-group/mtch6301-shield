@@ -3,3 +3,8 @@ syntax = "proto2";
 package proto;
 
 message TestCommand {}
+
+message SetNumChannelsCommand {
+  required int32 num_rx = 1;
+  required int32 num_tx = 2;
+}

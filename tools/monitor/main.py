@@ -21,25 +21,52 @@ class SerialMonitor:
         while self.running:
             try:
                 user_input = input("> ").strip().lower()
+                parts = user_input.split();
+
+                if not parts:
+                    continue
                 
-                if user_input == 'exit':
+                cmd_name = parts[0]
+                args = parts[1:] if len(parts) > 1 else []
+                
+
+                if cmd_name == 'exit':
                     self.running = False
                     break
                 
-                if user_input == 'test':
+                if cmd_name == 'test':
                     cmd = Command()
                     cmd.test_command.SetInParent() 
                     
-                    serialized_data = cmd.SerializeToString()
+                    self.send_command_bytes(cmd)
+                if cmd_name == 'setch':
+                    if len(args) != 2:
+                        print("Usage: setch [num_rx] [num_tx]")
+                        continue
                     
-                    length_prefix = len(serialized_data).to_bytes(2, byteorder='little')
+                    try:
+                        num_rx = int(args[0])
+                        num_tx = int(args[1])
+                    except ValueError:
+                        print("num_rx and num_tx must be ints")
+                        continue
                     
-                    if self.ser and self.ser.is_open:
-                        self.ser.write(length_prefix + serialized_data)
-                        print(f"Sent: TestCommand ({len(serialized_data)} bytes)")
-                
+                    cmd = Command()
+                    cmd.set_num_channels_command.num_rx = num_rx
+                    cmd.set_num_channels_command.num_tx = num_tx
+                    
+                    self.send_command_bytes(cmd)
             except Exception as e:
                 print(f"Error sending: {e}")
+
+    def send_command_bytes(self, cmd):
+        serialized_data = cmd.SerializeToString()
+                    
+        length_prefix = len(serialized_data).to_bytes(2, byteorder='little')
+        
+        if self.ser and self.ser.is_open:
+            self.ser.write(length_prefix + serialized_data)
+            print(f"[{time.strftime('%H:%M:%S')}] Sent ({len(serialized_data)} bytes)")
 
     def listen(self):
         while self.running:
@@ -64,6 +91,10 @@ class SerialMonitor:
 
                 if active_field == "info_packet":
                     print(f"\r[{time.strftime('%H:%M:%S')}] INFO: {data.info_packet.message}\n> ", end="")
+                if active_field == 'touch_packet':
+                    tp = data.touch_packet
+                    print(f"\r[{time.strftime('%H:%M:%S')}] TOUCH: ID={tp.touch_id} Down={tp.pen_down} X={tp.x} Y={tp.y}\n> ", end="")
+
 
             except (serial.SerialException, OSError):
                 print(f"\n[{time.strftime('%H:%M:%S')}] Connection lost. Retrying...")

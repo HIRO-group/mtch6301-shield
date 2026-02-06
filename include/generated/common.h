@@ -43,6 +43,10 @@ class Command final: public ::EmbeddedProto::MessageInterface
           set_test_command(rhs.get_test_command());
           break;
 
+        case FieldNumber::SET_NUM_CHANNELS_COMMAND:
+          set_set_num_channels_command(rhs.get_set_num_channels_command());
+          break;
+
         default:
           break;
       }
@@ -63,6 +67,10 @@ class Command final: public ::EmbeddedProto::MessageInterface
           set_test_command(rhs.get_test_command());
           break;
 
+        case FieldNumber::SET_NUM_CHANNELS_COMMAND:
+          set_set_num_channels_command(rhs.get_set_num_channels_command());
+          break;
+
         default:
           break;
       }
@@ -74,7 +82,8 @@ class Command final: public ::EmbeddedProto::MessageInterface
     enum class FieldNumber : uint32_t
     {
       NOT_SET = 0,
-      TEST_COMMAND = 1
+      TEST_COMMAND = 1,
+      SET_NUM_CHANNELS_COMMAND = 2
     };
 
     Command& operator=(const Command& rhs)
@@ -89,6 +98,10 @@ class Command final: public ::EmbeddedProto::MessageInterface
       {
         case FieldNumber::TEST_COMMAND:
           set_test_command(rhs.get_test_command());
+          break;
+
+        case FieldNumber::SET_NUM_CHANNELS_COMMAND:
+          set_set_num_channels_command(rhs.get_set_num_channels_command());
           break;
 
         default:
@@ -110,6 +123,10 @@ class Command final: public ::EmbeddedProto::MessageInterface
       {
         case FieldNumber::TEST_COMMAND:
           set_test_command(rhs.get_test_command());
+          break;
+
+        case FieldNumber::SET_NUM_CHANNELS_COMMAND:
+          set_set_num_channels_command(rhs.get_set_num_channels_command());
           break;
 
         default:
@@ -161,6 +178,46 @@ class Command final: public ::EmbeddedProto::MessageInterface
     inline const TestCommand& get_test_command() const { return payload_.test_command_; }
     inline const TestCommand& test_command() const { return payload_.test_command_; }
 
+    static constexpr char const* SET_NUM_CHANNELS_COMMAND_NAME = "set_num_channels_command";
+    inline bool has_set_num_channels_command() const
+    {
+      return FieldNumber::SET_NUM_CHANNELS_COMMAND == which_payload_;
+    }
+    inline void clear_set_num_channels_command()
+    {
+      if(FieldNumber::SET_NUM_CHANNELS_COMMAND == which_payload_)
+      {
+        which_payload_ = FieldNumber::NOT_SET;
+        payload_.set_num_channels_command_.~SetNumChannelsCommand();
+      }
+    }
+    inline void set_set_num_channels_command(const SetNumChannelsCommand& value)
+    {
+      if(FieldNumber::SET_NUM_CHANNELS_COMMAND != which_payload_)
+      {
+        init_payload(FieldNumber::SET_NUM_CHANNELS_COMMAND);
+      }
+      payload_.set_num_channels_command_ = value;
+    }
+    inline void set_set_num_channels_command(const SetNumChannelsCommand&& value)
+    {
+      if(FieldNumber::SET_NUM_CHANNELS_COMMAND != which_payload_)
+      {
+        init_payload(FieldNumber::SET_NUM_CHANNELS_COMMAND);
+      }
+      payload_.set_num_channels_command_ = value;
+    }
+    inline SetNumChannelsCommand& mutable_set_num_channels_command()
+    {
+      if(FieldNumber::SET_NUM_CHANNELS_COMMAND != which_payload_)
+      {
+        init_payload(FieldNumber::SET_NUM_CHANNELS_COMMAND);
+      }
+      return payload_.set_num_channels_command_;
+    }
+    inline const SetNumChannelsCommand& get_set_num_channels_command() const { return payload_.set_num_channels_command_; }
+    inline const SetNumChannelsCommand& set_num_channels_command() const { return payload_.set_num_channels_command_; }
+
 
     ::EmbeddedProto::Error serialize(::EmbeddedProto::WriteBufferInterface& buffer) const override
     {
@@ -172,6 +229,13 @@ class Command final: public ::EmbeddedProto::MessageInterface
           if(has_test_command() && (::EmbeddedProto::Error::NO_ERRORS == return_value))
           {
             return_value = payload_.test_command_.serialize_with_id(static_cast<uint32_t>(FieldNumber::TEST_COMMAND), buffer, true);
+          }
+          break;
+
+        case FieldNumber::SET_NUM_CHANNELS_COMMAND:
+          if(has_set_num_channels_command() && (::EmbeddedProto::Error::NO_ERRORS == return_value))
+          {
+            return_value = payload_.set_num_channels_command_.serialize_with_id(static_cast<uint32_t>(FieldNumber::SET_NUM_CHANNELS_COMMAND), buffer, true);
           }
           break;
 
@@ -196,6 +260,7 @@ class Command final: public ::EmbeddedProto::MessageInterface
         switch(id_tag)
         {
           case FieldNumber::TEST_COMMAND:
+          case FieldNumber::SET_NUM_CHANNELS_COMMAND:
             return_value = deserialize_payload(id_tag, buffer, wire_type);
             break;
 
@@ -241,6 +306,9 @@ class Command final: public ::EmbeddedProto::MessageInterface
       {
         case FieldNumber::TEST_COMMAND:
           name = TEST_COMMAND_NAME;
+          break;
+        case FieldNumber::SET_NUM_CHANNELS_COMMAND:
+          name = SET_NUM_CHANNELS_COMMAND_NAME;
           break;
         default:
           name = "Invalid FieldNumber";
@@ -336,6 +404,7 @@ class Command final: public ::EmbeddedProto::MessageInterface
         payload() {}
         ~payload() {}
         TestCommand test_command_;
+        SetNumChannelsCommand set_num_channels_command_;
       };
       payload payload_;
 
@@ -354,6 +423,10 @@ class Command final: public ::EmbeddedProto::MessageInterface
             new(&payload_.test_command_) TestCommand;
             break;
 
+          case FieldNumber::SET_NUM_CHANNELS_COMMAND:
+            new(&payload_.set_num_channels_command_) SetNumChannelsCommand;
+            break;
+
           default:
             break;
          }
@@ -367,6 +440,9 @@ class Command final: public ::EmbeddedProto::MessageInterface
         {
           case FieldNumber::TEST_COMMAND:
             ::EmbeddedProto::destroy_at(&payload_.test_command_);
+            break;
+          case FieldNumber::SET_NUM_CHANNELS_COMMAND:
+            ::EmbeddedProto::destroy_at(&payload_.set_num_channels_command_);
             break;
           default:
             break;
@@ -390,6 +466,9 @@ class Command final: public ::EmbeddedProto::MessageInterface
           case FieldNumber::TEST_COMMAND:
             return_value = payload_.test_command_.deserialize_check_type(buffer, wire_type);
             break;
+          case FieldNumber::SET_NUM_CHANNELS_COMMAND:
+            return_value = payload_.set_num_channels_command_.deserialize_check_type(buffer, wire_type);
+            break;
           default:
             break;
         }
@@ -410,6 +489,9 @@ class Command final: public ::EmbeddedProto::MessageInterface
         {
           case FieldNumber::TEST_COMMAND:
             left_chars = payload_.test_command_.to_string(left_chars, indent_level, TEST_COMMAND_NAME, first_field);
+            break;
+          case FieldNumber::SET_NUM_CHANNELS_COMMAND:
+            left_chars = payload_.set_num_channels_command_.to_string(left_chars, indent_level, SET_NUM_CHANNELS_COMMAND_NAME, first_field);
             break;
           default:
             break;
@@ -442,6 +524,10 @@ class Data final: public ::EmbeddedProto::MessageInterface
           set_info_packet(rhs.get_info_packet());
           break;
 
+        case FieldNumber::TOUCH_PACKET:
+          set_touch_packet(rhs.get_touch_packet());
+          break;
+
         default:
           break;
       }
@@ -462,6 +548,10 @@ class Data final: public ::EmbeddedProto::MessageInterface
           set_info_packet(rhs.get_info_packet());
           break;
 
+        case FieldNumber::TOUCH_PACKET:
+          set_touch_packet(rhs.get_touch_packet());
+          break;
+
         default:
           break;
       }
@@ -473,7 +563,8 @@ class Data final: public ::EmbeddedProto::MessageInterface
     enum class FieldNumber : uint32_t
     {
       NOT_SET = 0,
-      INFO_PACKET = 1
+      INFO_PACKET = 1,
+      TOUCH_PACKET = 2
     };
 
     Data& operator=(const Data& rhs)
@@ -488,6 +579,10 @@ class Data final: public ::EmbeddedProto::MessageInterface
       {
         case FieldNumber::INFO_PACKET:
           set_info_packet(rhs.get_info_packet());
+          break;
+
+        case FieldNumber::TOUCH_PACKET:
+          set_touch_packet(rhs.get_touch_packet());
           break;
 
         default:
@@ -509,6 +604,10 @@ class Data final: public ::EmbeddedProto::MessageInterface
       {
         case FieldNumber::INFO_PACKET:
           set_info_packet(rhs.get_info_packet());
+          break;
+
+        case FieldNumber::TOUCH_PACKET:
+          set_touch_packet(rhs.get_touch_packet());
           break;
 
         default:
@@ -560,6 +659,46 @@ class Data final: public ::EmbeddedProto::MessageInterface
     inline const InfoMessagePacket<Data_info_packet_InfoMessagePacket_message_LENGTH>& get_info_packet() const { return payload_.info_packet_; }
     inline const InfoMessagePacket<Data_info_packet_InfoMessagePacket_message_LENGTH>& info_packet() const { return payload_.info_packet_; }
 
+    static constexpr char const* TOUCH_PACKET_NAME = "touch_packet";
+    inline bool has_touch_packet() const
+    {
+      return FieldNumber::TOUCH_PACKET == which_payload_;
+    }
+    inline void clear_touch_packet()
+    {
+      if(FieldNumber::TOUCH_PACKET == which_payload_)
+      {
+        which_payload_ = FieldNumber::NOT_SET;
+        payload_.touch_packet_.~TouchPacket();
+      }
+    }
+    inline void set_touch_packet(const TouchPacket& value)
+    {
+      if(FieldNumber::TOUCH_PACKET != which_payload_)
+      {
+        init_payload(FieldNumber::TOUCH_PACKET);
+      }
+      payload_.touch_packet_ = value;
+    }
+    inline void set_touch_packet(const TouchPacket&& value)
+    {
+      if(FieldNumber::TOUCH_PACKET != which_payload_)
+      {
+        init_payload(FieldNumber::TOUCH_PACKET);
+      }
+      payload_.touch_packet_ = value;
+    }
+    inline TouchPacket& mutable_touch_packet()
+    {
+      if(FieldNumber::TOUCH_PACKET != which_payload_)
+      {
+        init_payload(FieldNumber::TOUCH_PACKET);
+      }
+      return payload_.touch_packet_;
+    }
+    inline const TouchPacket& get_touch_packet() const { return payload_.touch_packet_; }
+    inline const TouchPacket& touch_packet() const { return payload_.touch_packet_; }
+
 
     ::EmbeddedProto::Error serialize(::EmbeddedProto::WriteBufferInterface& buffer) const override
     {
@@ -571,6 +710,13 @@ class Data final: public ::EmbeddedProto::MessageInterface
           if(has_info_packet() && (::EmbeddedProto::Error::NO_ERRORS == return_value))
           {
             return_value = payload_.info_packet_.serialize_with_id(static_cast<uint32_t>(FieldNumber::INFO_PACKET), buffer, true);
+          }
+          break;
+
+        case FieldNumber::TOUCH_PACKET:
+          if(has_touch_packet() && (::EmbeddedProto::Error::NO_ERRORS == return_value))
+          {
+            return_value = payload_.touch_packet_.serialize_with_id(static_cast<uint32_t>(FieldNumber::TOUCH_PACKET), buffer, true);
           }
           break;
 
@@ -595,6 +741,7 @@ class Data final: public ::EmbeddedProto::MessageInterface
         switch(id_tag)
         {
           case FieldNumber::INFO_PACKET:
+          case FieldNumber::TOUCH_PACKET:
             return_value = deserialize_payload(id_tag, buffer, wire_type);
             break;
 
@@ -640,6 +787,9 @@ class Data final: public ::EmbeddedProto::MessageInterface
       {
         case FieldNumber::INFO_PACKET:
           name = INFO_PACKET_NAME;
+          break;
+        case FieldNumber::TOUCH_PACKET:
+          name = TOUCH_PACKET_NAME;
           break;
         default:
           name = "Invalid FieldNumber";
@@ -735,6 +885,7 @@ class Data final: public ::EmbeddedProto::MessageInterface
         payload() {}
         ~payload() {}
         InfoMessagePacket<Data_info_packet_InfoMessagePacket_message_LENGTH> info_packet_;
+        TouchPacket touch_packet_;
       };
       payload payload_;
 
@@ -753,6 +904,10 @@ class Data final: public ::EmbeddedProto::MessageInterface
             new(&payload_.info_packet_) InfoMessagePacket<Data_info_packet_InfoMessagePacket_message_LENGTH>;
             break;
 
+          case FieldNumber::TOUCH_PACKET:
+            new(&payload_.touch_packet_) TouchPacket;
+            break;
+
           default:
             break;
          }
@@ -766,6 +921,9 @@ class Data final: public ::EmbeddedProto::MessageInterface
         {
           case FieldNumber::INFO_PACKET:
             ::EmbeddedProto::destroy_at(&payload_.info_packet_);
+            break;
+          case FieldNumber::TOUCH_PACKET:
+            ::EmbeddedProto::destroy_at(&payload_.touch_packet_);
             break;
           default:
             break;
@@ -789,6 +947,9 @@ class Data final: public ::EmbeddedProto::MessageInterface
           case FieldNumber::INFO_PACKET:
             return_value = payload_.info_packet_.deserialize_check_type(buffer, wire_type);
             break;
+          case FieldNumber::TOUCH_PACKET:
+            return_value = payload_.touch_packet_.deserialize_check_type(buffer, wire_type);
+            break;
           default:
             break;
         }
@@ -809,6 +970,9 @@ class Data final: public ::EmbeddedProto::MessageInterface
         {
           case FieldNumber::INFO_PACKET:
             left_chars = payload_.info_packet_.to_string(left_chars, indent_level, INFO_PACKET_NAME, first_field);
+            break;
+          case FieldNumber::TOUCH_PACKET:
+            left_chars = payload_.touch_packet_.to_string(left_chars, indent_level, TOUCH_PACKET_NAME, first_field);
             break;
           default:
             break;

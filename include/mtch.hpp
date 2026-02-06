@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <array>
 
+#include <gpio_defs.hpp>
 #include <communication/serial.hpp>
 
 
@@ -17,7 +18,10 @@
 
 inline const std::array<uint8_t, 18> MTCH_TX_MAP = {2, 3, 6, 13, 4, 7, 28, 29, 30, 14, 15, 16, 5, 8, 31, 32, 33, 34};
 inline const std::array<uint8_t, 13> MTCH_RX_MAP = {8, 7, 6, 5, 4, 3, 2, 1, 0, 9, 10, 11, 12};
-
+inline const std::array<uint16_t, 16> SCALING_COEFFICIENTS = {
+  0x5555, 0x4000, 0x3333, 0x2AAA, 0x2492, 0x2000, 0x1C71, 0x1999,
+  0x1745, 0x1555, 0x13B1, 0x1249, 0x1111, 0x1000, 0x0F0F, 0x0E38
+};
 
 enum MtchResCode : uint8_t {
   SUCCESS = 0x00,
@@ -63,8 +67,9 @@ class Mtch {
     MtchResCode write_nvram();
     MtchResCode init();
 
-    void poll_sensor();
+    void handle_error(MtchResCode error);
 
+    void poll_sensor();
     void reset();
     bool ping();
   private:
@@ -74,7 +79,6 @@ class Mtch {
     static Mtch* instance;
     static void IRAM_ATTR int_isr();
     
-    void handle_error(MtchResCode error);
     void wait_for_ready();
     MtchResCode read_single_register(uint8_t index, uint8_t offset, uint8_t* res);
     MtchResCode write_single_register(uint8_t index, uint8_t offset, const uint8_t* value);

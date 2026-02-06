@@ -5,3 +5,10 @@ package proto;
 message InfoMessagePacket {
   required string message = 1;
 }
+
+message TouchPacket {
+  required int32 touch_id = 1;
+  required bool pen_down = 2;
+  required int32 x = 3;
+  required int32 y = 4;
+}

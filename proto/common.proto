@@ -8,11 +8,13 @@ package proto;
 message Data {
   oneof payload {
     InfoMessagePacket info_packet = 1;
+    TouchPacket touch_packet = 2;
   }
 }
 
 message Command {
   oneof payload {
     TestCommand test_command = 1;
+    SetNumChannelsCommand set_num_channels_command = 2;
   }
 }
